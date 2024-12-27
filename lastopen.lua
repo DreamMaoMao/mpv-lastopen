@@ -38,6 +38,16 @@ function saveTable(t, path)
   return true
 end
 
+function file_exists(path)
+  local file = io.open(path, "r")  -- Try to open the file in read mode
+  if file then
+      file:close()  -- Close the file if it was successfully opened
+      return true
+  else
+      return false
+  end
+end
+
 local function save_data()
     local data = {
         path = mp.get_property('path'),
@@ -68,10 +78,12 @@ end
 local function load_data()
     local data = loadData(getFilepath(lastopenFileName))
     if data then
-        if data.path then
+        if data.path and file_exists(data.path) then
           mp.commandv("loadfile", parsePath(data.path), "replace", -1)
           local message = styleOn.."{\\b1}Last Open load:\n"..data.path.."{\\b0}"..styleOff
           mp.osd_message(message)
+        elseif not file_exists(data.path) then
+            mp.osd_message('File not found: '..data.path)
         else
             mp.osd_message('Failed to parse lastopen.json')
         end
